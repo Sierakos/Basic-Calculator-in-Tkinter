@@ -1,100 +1,132 @@
 # Calculator in tkinter #
-
 from tkinter import *
-from tkinter import ttk
+
+BACKGROUND_COLOR = "#DDDDDD"
+BUTTONS_FONT = ("Arial", 30)
+LABEL_FONT = ("Arial", 25)
+TOTAL_LABEL_FONT = ("Arial", 10)
 
 class Calculator():
+    def __init__(self):
+        self.root = Tk()
+        self.root.resizable(0,0)
+        self.root.title("Calculator")
 
-    def __init__(self, root):
-        root.title('Calculator')
-        root.geometry('400x300')
+        self.value = ""
+        self.total_value = ""
 
-        self.value = StringVar()
+        self.digits = {
+            1:(1,0), 2:(1,1), 3:(1,2),
+            4:(2,0), 5:(2,1), 6:(2,2),
+            7:(3,0), 8:(3,1), 9:(3,2),
+            ".":(4,0), 0:(4,1)
+        }
 
-        self.val = ""
-        self.val_1 = ""
+        self.symbols = ['/', '*', '-', '+']
 
-        self.mainframe = ttk.Frame(root, padding=15)
-        self.mainframe.grid(column=0,row=0, sticky=N)
-        root.rowconfigure(0, weight=1)
-        root.columnconfigure(0, weight=1)
+        self.container_frame = self.create_container_frame()
 
-        # s = ttk.Style()
-        # s.configure('bg-blue.TFrame', background='blue')
-        self.entry_frame = ttk.Frame(self.mainframe, padding=10)
-        self.entry_frame.grid(row=0, column=0, sticky=N)
-
-        self.buttons_frame = ttk.Frame(self.mainframe, padding=10)
-        self.buttons_frame.grid(row=1, column=0, sticky=N)
-
-        self.createEntry()
-        self.createButtons()
-
-        ### mainloop ###
-        root.mainloop()
-
-
-    def createEntry(self):
-        self.calc_entry = ttk.Entry(self.entry_frame, width=25, font='Times 15', textvariable=self.value, state=DISABLED)
-        self.calc_entry.grid(column=0, row=0)
-
-    def createButtons(self):
-        self.numbers = [0,1,2,3,4,5,6,7,8,9]
+        self.window_frame = self.create_window_frame()
+        self.window_frame.columnconfigure(0, weight=1)
         
+        self.buttons_frame = self.create_buttons_frame()
+        
+        self.window_label, self.window_total_label = self.create_window_labels()
+        self.create_buttons()
+        self.create_math_buttons()
+        self.create_equals_button()
+        self.create_clear_button()
 
-        ttk.Button(self.buttons_frame, text=self.numbers[1], command=lambda : self.press(1)).grid(column=0, row=0)
-        ttk.Button(self.buttons_frame, text=self.numbers[2], command=lambda : self.press(2)).grid(column=1, row=0)
-        ttk.Button(self.buttons_frame, text=self.numbers[3], command=lambda : self.press(3)).grid(column=2, row=0)
-        ttk.Button(self.buttons_frame, text=self.numbers[4], command=lambda : self.press(4)).grid(column=0, row=1)
-        ttk.Button(self.buttons_frame, text=self.numbers[5], command=lambda : self.press(5)).grid(column=1, row=1)
-        ttk.Button(self.buttons_frame, text=self.numbers[6], command=lambda : self.press(6)).grid(column=2, row=1)
-        ttk.Button(self.buttons_frame, text=self.numbers[7], command=lambda : self.press(7)).grid(column=0, row=2)
-        ttk.Button(self.buttons_frame, text=self.numbers[8], command=lambda : self.press(8)).grid(column=1, row=2)
-        ttk.Button(self.buttons_frame, text=self.numbers[9], command=lambda : self.press(9)).grid(column=2, row=2)
+    def run(self):
+        self.root.mainloop()
 
-        ttk.Button(self.buttons_frame, text='/', command=lambda : self.mathSymbolPress("/")).grid(column=3, row=0)
-        ttk.Button(self.buttons_frame, text='*', command=lambda : self.mathSymbolPress("*")).grid(column=3, row=1)
-        ttk.Button(self.buttons_frame, text='-', command=lambda : self.mathSymbolPress("-")).grid(column=3, row=2)
-        ttk.Button(self.buttons_frame, text='+', command=lambda : self.mathSymbolPress("+")).grid(column=3, row=3)
+    def create_container_frame(self):
+        frame = Frame(self.root, bg=BACKGROUND_COLOR)
+        frame.grid(row=0, column=0, sticky=NSEW)
+        frame.columnconfigure(1, weight=1)
+        frame.rowconfigure(1, weight=1)
+        return frame
 
-        ttk.Button(self.buttons_frame, text=",", command=self.addComa).grid(column=0, row=3)
-        ttk.Button(self.buttons_frame, text=self.numbers[0], command=lambda : self.press(0)).grid(column=1, row=3)
-        ttk.Button(self.buttons_frame, text="=", command=self.equ).grid(column=2, row=3)
+    def create_window_frame(self):
+        frame = Frame(self.container_frame)
+        frame.grid(row=0, column=0, sticky=NSEW)
+        return frame
 
-    def press(self, num):
-        self.val += str(self.numbers[num])
-        self.value.set(self.val)
+    def create_buttons_frame(self):
+        frame = Frame(self.container_frame)
+        frame.grid(row=1, column=0, sticky=NSEW)
+        return frame
 
-    def addComa(self):
-        self.val += "."
-        self.value.set(self.val)
+    def create_window_labels(self):
+        label = Label(self.window_frame, text=self.value, font=LABEL_FONT)
+        label.grid(row=1,column=0, padx=20, pady=20, sticky=E)
 
-    def mathSymbolPress(self, symbol):
-        self.val_1 = self.val
-        self.val = ""
-        self.m_sym = symbol
+        total_label = Label(self.window_frame, text=self.total_value, font=TOTAL_LABEL_FONT)
+        total_label.grid(row=0,column=0,sticky=E)
+        return label, total_label
 
-    def equ(self):
-        if self.m_sym == "+":
-            res = float(self.val_1) + float(self.val)
-            self.value.set(res)
-            self.val = res
-        if self.m_sym == "-":
-            res = float(self.val_1) - float(self.val)
-            self.value.set(res)
-            self.val = res
-        if self.m_sym == "*":
-            res = float(self.val_1) * float(self.val)
-            self.value.set(res)
-            self.val = res
-        if self.m_sym == "/":
-            res = float(self.val_1) / float(self.val)
-            self.value.set(res)
-            self.val = res
+    def create_buttons(self):
+        for digit, places in self.digits.items():
+            Button(self.buttons_frame, text=digit, font=BUTTONS_FONT, command=lambda digit=digit: self.push_digit(digit)).grid(row=places[0], column=places[1], sticky=NSEW)
 
-        self.val_1 = ""
+    def create_math_buttons(self):
+        i = 1
+        for symbol in self.symbols:
+            Button(self.buttons_frame, text=symbol, font=BUTTONS_FONT, command=lambda symbol=symbol: self.push_math_buttons(symbol)).grid(row=i, column=3, sticky=NSEW)
+            i += 1
 
-root = Tk()
-Calculator(root)
-root.mainloop()
+    def create_equals_button(self):
+        Button(self.buttons_frame, text="=", font=BUTTONS_FONT, command=self.push_equal_buttons).grid(row=4, column=2, sticky=NSEW)
+
+    def create_clear_button(self):
+        Button(self.buttons_frame, text="Clear", font=BUTTONS_FONT, command=self.clear).grid(row=0, column=0, columnspan=4, sticky=NSEW)
+
+    def clear(self):
+        self.value = ""
+        self.total_value = ""
+        self.update_value()
+        self.update_total_value()
+
+    def push_digit(self, digit):
+        if "." in self.value and digit == ".":
+            pass
+        else:
+            self.value += str(digit)
+        self.update_value()
+
+    def push_math_buttons(self, symbol):
+        self.value += symbol
+        if self.total_value == "":
+            self.total_value += self.value
+        else:
+            if self.total_value[-1] in self.symbols:
+                new = self.total_value.replace(self.total_value[-1], symbol)
+                self.total_value = new
+        self.value = ""
+        self.update_value()
+        self.update_total_value()
+
+    def push_equal_buttons(self):
+        self.total_value += self.value
+        try:
+            self.value = str(eval(self.total_value))
+            self.total_value = ""
+        except Exception:
+            self.value = "Error"
+        finally:
+            self.update_value()
+
+        self.update_value()
+        self.update_total_value()
+
+    def update_value(self):
+        self.window_label.config(text=self.value[:10])
+
+    def update_total_value(self):
+        self.window_total_label.config(text=self.total_value[:10])
+
+if __name__ == "__main__":
+    calc = Calculator()
+    calc.run()
+
 
